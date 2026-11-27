@@ -47,8 +47,10 @@ func test_a_faint_dotted_line_becomes_a_lane_line() -> void:
 	assert_almost_eq(Polyline.centre(outline.lane_lines[0]).y, float(ROAD_TOP + LANE_WIDTH), 1.0)
 
 
-func test_road_edges_are_built_from_chained_lane_lines_only() -> void:
-	assert_eq(MapConverter.from_image(_road_with_specks()).road_edges.size(), 0)
+func test_a_road_marked_only_with_faint_specks_still_gets_its_edges() -> void:
+	var outline: MapOutline = MapConverter.from_image(_road_with_specks())
+
+	assert_eq(outline.road_edges.size(), 2)
 
 
 func test_a_field_has_no_roads() -> void:

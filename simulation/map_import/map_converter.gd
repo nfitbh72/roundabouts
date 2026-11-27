@@ -24,9 +24,7 @@ static func from_image(image: Image) -> MapOutline:
 	var chained: Array[PackedVector2Array] = LaneChains.join(LaneMarks.find(shapes, surface))
 	var lane_lines: Array[PackedVector2Array] = chained.duplicate()
 	lane_lines.append_array(find_dotted_lines(working, shapes, surface, chained))
-	var road_edges: Array[PackedVector2Array] = build_road_edges(
-		chained, RoadMask.from_surface(surface)
-	)
+	var road_edges: Array[PackedVector2Array] = build_road_edges(lane_lines, working)
 	return MapOutline.new(working.get_size(), road_edges, lane_lines)
 
 
@@ -49,16 +47,16 @@ static func find_dotted_lines(
 
 
 ## Returns the edges of the roads that [param lines] run along, using
-## [param road] to find where the tarmac ends. Only chained lane lines are used
-## for now: rows of specks are found with less certainty, and an edge built
-## beside a kerb mistaken for a lane line ends up on a roof.
+## [param image] to find where the tarmac ends. Lines at junctions are left
+## out, so that no edges are built across the middle of a junction.
 static func build_road_edges(
-	lines: Array[PackedVector2Array], road: BitMap
+	lines: Array[PackedVector2Array], image: Image
 ) -> Array[PackedVector2Array]:
 	var width: float = LaneGroups.lane_width(lines)
+	var along_roads: Array[PackedVector2Array] = JunctionLines.away_from_junctions(lines, width)
 	var edges: Array[PackedVector2Array] = []
-	for group: Array[PackedVector2Array] in LaneGroups.group(lines, width):
-		edges.append_array(LaneRoadEdges.edges_of(group, width, road))
+	for group: Array[PackedVector2Array] in LaneGroups.group(along_roads, width):
+		edges.append_array(LaneRoadEdges.edges_of(group, width, image))
 	return edges
 
 

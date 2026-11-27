@@ -42,23 +42,23 @@ Instead of finding the road and then the lanes inside it, find the lanes and bui
    Dashes too faint or distant to make marks break up into specks of a pixel or two. These are found separately: a Hough transform finds straight rows of specks on tarmac, and a row counts as a lane line only if the colour either side matches. A kerb has road on one side and pavement on the other, and fails that test even where the pavement is as grey as the road.
 4. **Group lane lines into roads.** Lane lines that run roughly parallel and about one lane width apart belong to the same carriageway.
 5. **Measure the lane width** from the spacing between neighbouring lane lines.
-6. **Place the road edges** by stepping outwards from the outermost lane line on each side until the tarmac ends, between 0.4 and 2 lane widths away. Where that is unclear along most of the line, draw no edge at all: a missing edge is easier to spot and fix than a wrong one.
+6. **Place the road edges** by stepping outwards from the outermost lane line on each side until the colour stops matching the tarmac right beside that line, between 0.4 and 2 lane widths away. Comparing with the road's own tarmac tells it from a pavement of almost the same grey. If the outermost line gives no clear answer, try the next line in, but only accept an edge that lies beyond the outermost line. Lines that meet another line at a steep angle are stop lines, crossings or lane lines at the mouth of a junction, and are not used for edges. Where nothing gives a clear answer, draw no edge at all: a missing edge is easier to spot and fix than a wrong one.
 7. **Join the roads up at the junction**, by extending the edges until they meet.
 
 ### Prototype result
 
-Steps 1 to 6 are built, in `simulation/map_import/`. Step 7 is not. On the Hornsby screenshot, conversion takes under a second and finds:
+Steps 1 to 6 are built, in `simulation/map_import/`. Step 7 is not. On the Hornsby screenshot, conversion takes about half a second and finds:
 
 - lane lines on every arm: two on the B83 north of the junction, three on the eastern B83 (from rows of specks), and the centre lines of Pretoria Parade and College Cres
-- road edges along the western kerb of the B83, the northern side of Pretoria Parade and the western kerb of College Cres
+- road edges along both kerbs of the B83 north of the junction, the southern kerb of the eastern B83, the eastern kerb of College Cres and a short stretch of Pretoria Parade
 
-Nothing is drawn on the car park, the roofs or the pavements. What it gets wrong or misses:
+Nothing is drawn on the car park, the roofs or the pavements, and no edge is drawn in the wrong place. What it gets wrong or misses:
 
-- **Junction markings.** Stop lines and the edges of the pedestrian crossings are rows of paint on tarmac too, so they come out as lane lines.
-- **Most edges.** Where the tarmac merges with a car park or footpath, stepping outwards finds no clear end. Lines found as rows of specks are not yet used for edges at all: when they were, a row along a kerb put an edge on a church roof.
+- **Junction markings.** Stop lines and the edges of the pedestrian crossings are rows of paint on tarmac too, so they come out as lane lines. They are kept out of edge building.
+- **Some edges.** Most of Pretoria Parade, the western kerb of College Cres and the northern side of the eastern B83 have none. Usually a row of kerb specks has been taken for a lane line, and the edge beside it is refused because it would sit inside that line.
 - **The junction itself**, which waits for step 7.
 
-The next gain is in step 6: stepping outwards until the colour stops matching the tarmac beside the lane line, rather than until the colour-classified road mask ends. That is the same matching-sides idea that tells kerbs from lane lines, and it should give the eastern arm its edges.
+Each wrong edge found along the way was replaced by a rule that leaves the edge out instead, so what is drawn can be trusted, but too little is drawn. The next gains are in telling kerb specks from lane specks, and in step 7.
 
 ### Known weaknesses
 

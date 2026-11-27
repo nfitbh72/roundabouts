@@ -3,14 +3,16 @@ extends GutTest
 const WIDTH: float = 20.0
 const ROAD_TOP: int = 40
 const ROAD_BOTTOM: int = 100
+const SIZE: Vector2i = Vector2i(200, 140)
+## Grey enough to pass for tarmac on its own, but not the same grey as the road.
+const PAVEMENT: Color = Color8(150, 140, 135)
 
 
-## A road mask with tarmac from [constant ROAD_TOP] to [constant ROAD_BOTTOM].
-func _road() -> BitMap:
-	var road: BitMap = BitMap.new()
-	road.create(Vector2i(200, 140))
-	road.set_bit_rect(Rect2i(0, ROAD_TOP, 200, ROAD_BOTTOM - ROAD_TOP), true)
-	return road
+## Grass with a road of tarmac from [constant ROAD_TOP] to [constant ROAD_BOTTOM].
+func _road() -> Image:
+	var image: Image = JunctionImage.grass(SIZE)
+	image.fill_rect(Rect2i(0, ROAD_TOP, SIZE.x, ROAD_BOTTOM - ROAD_TOP), JunctionImage.TARMAC)
+	return image
 
 
 func _across(y: float) -> PackedVector2Array:
@@ -28,6 +30,12 @@ func _assert_heights(edges: Array[PackedVector2Array], expected: Array[float]) -
 		assert_almost_eq(heights[index], expected[index], 0.5)
 
 
+func test_tarmac_beside_is_the_colour_next_to_the_line() -> void:
+	var colour: Vector3 = LaneRoadEdges.tarmac_beside(Vector2(50, 60), Vector2.UP, _road())
+
+	assert_eq(colour, Vector3(90, 90, 95))
+
+
 func test_distance_to_edge_finds_where_the_tarmac_ends() -> void:
 	var distance: float = LaneRoadEdges.distance_to_edge(
 		Vector2(50, 60), Vector2.UP, WIDTH, _road()
@@ -36,9 +44,20 @@ func test_distance_to_edge_finds_where_the_tarmac_ends() -> void:
 	assert_almost_eq(distance, 20.0, 0.5)
 
 
+func test_a_grey_pavement_still_counts_as_the_edge() -> void:
+	var image: Image = _road()
+	image.fill_rect(Rect2i(0, ROAD_BOTTOM, SIZE.x, 20), PAVEMENT)
+
+	var distance: float = LaneRoadEdges.distance_to_edge(
+		Vector2(50, 80), Vector2.DOWN, WIDTH, image
+	)
+
+	assert_almost_eq(distance, 20.0, 0.5)
+
+
 func test_an_edge_too_close_to_the_lane_line_is_ignored() -> void:
 	var distance: float = LaneRoadEdges.distance_to_edge(
-		Vector2(50, 43), Vector2.UP, WIDTH, _road()
+		Vector2(50, 46), Vector2.UP, WIDTH, _road()
 	)
 
 	assert_eq(distance, -1.0)
@@ -55,24 +74,40 @@ func test_an_edge_too_far_from_the_lane_line_is_ignored() -> void:
 func test_edges_sit_where_the_tarmac_ends_beside_the_outer_lines() -> void:
 	var lines: Array[PackedVector2Array] = [_across(60), _across(80)]
 
-	var edges: Array[PackedVector2Array] = LaneRoadEdges.edges_of(lines, WIDTH, _road())
-
-	assert_eq(edges.size(), 2)
-	_assert_heights(edges, [float(ROAD_TOP), float(ROAD_BOTTOM)])
-
-
-func test_no_edge_is_drawn_where_the_tarmac_carries_on() -> void:
-	var road: BitMap = _road()
-	road.set_bit_rect(Rect2i(0, 0, 200, ROAD_TOP), true)
-
-	var edges: Array[PackedVector2Array] = LaneRoadEdges.edges_of([_across(80)], WIDTH, road)
-
-	_assert_heights(edges, [float(ROAD_BOTTOM)])
+	_assert_heights(
+		LaneRoadEdges.edges_of(lines, WIDTH, _road()), [float(ROAD_TOP), float(ROAD_BOTTOM)]
+	)
 
 
 func test_lines_running_opposite_ways_still_give_one_edge_each_side() -> void:
 	var lines: Array[PackedVector2Array] = [_across(60), Polyline.reversed(_across(80))]
 
-	var edges: Array[PackedVector2Array] = LaneRoadEdges.edges_of(lines, WIDTH, _road())
+	_assert_heights(
+		LaneRoadEdges.edges_of(lines, WIDTH, _road()), [float(ROAD_TOP), float(ROAD_BOTTOM)]
+	)
+
+
+func test_no_edge_is_drawn_where_the_tarmac_carries_on() -> void:
+	var image: Image = _road()
+	image.fill_rect(Rect2i(0, 0, SIZE.x, ROAD_TOP), JunctionImage.TARMAC)
+
+	_assert_heights(LaneRoadEdges.edges_of([_across(80)], WIDTH, image), [float(ROAD_BOTTOM)])
+
+
+func test_an_inner_line_gives_the_edge_when_the_outer_one_cannot() -> void:
+	var image: Image = _road()
+	# A thin red line just beside the outer lane line spoils its view of the tarmac.
+	image.fill_rect(Rect2i(0, 82, SIZE.x, 2), Color8(200, 30, 30))
+
+	var edges: Array[PackedVector2Array] = LaneRoadEdges.edges_of(
+		[_across(60), _across(80)], WIDTH, image
+	)
 
 	_assert_heights(edges, [float(ROAD_TOP), float(ROAD_BOTTOM)])
+
+
+func test_an_edge_that_would_sit_inside_the_outermost_line_is_not_used() -> void:
+	# The outer line runs along the kerb, as rows of kerb specks sometimes do.
+	var lines: Array[PackedVector2Array] = [_across(60), _across(96)]
+
+	_assert_heights(LaneRoadEdges.edges_of(lines, WIDTH, _road()), [float(ROAD_TOP)])

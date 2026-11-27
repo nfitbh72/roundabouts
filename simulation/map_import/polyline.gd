@@ -102,6 +102,21 @@ static func distance_to(line: PackedVector2Array, point: Vector2) -> float:
 	return nearest
 
 
+## Returns the shortest distance between lines [param a] and [param b]: zero
+## if they cross.
+static func distance_between(a: PackedVector2Array, b: PackedVector2Array) -> float:
+	for i: int in range(1, a.size()):
+		for j: int in range(1, b.size()):
+			if Geometry2D.segment_intersects_segment(a[i - 1], a[i], b[j - 1], b[j]) != null:
+				return 0.0
+	var nearest: float = INF
+	for point: Vector2 in a:
+		nearest = minf(nearest, distance_to(b, point))
+	for point: Vector2 in b:
+		nearest = minf(nearest, distance_to(a, point))
+	return nearest
+
+
 ## Returns the lowest and highest position of any point of [param line] when
 ## measured along [param axis] from [param origin].
 static func extent_along(line: PackedVector2Array, origin: Vector2, axis: Vector2) -> Vector2:

@@ -62,5 +62,17 @@ func test_distance_to_beyond_the_end_measures_to_the_end() -> void:
 	assert_eq(Polyline.distance_to(RIGHTWARDS, Vector2(34, 3)), 5.0)
 
 
+func test_distance_between_crossing_lines_is_zero() -> void:
+	var upwards: PackedVector2Array = PackedVector2Array([Vector2(15, -10), Vector2(15, 10)])
+
+	assert_eq(Polyline.distance_between(RIGHTWARDS, upwards), 0.0)
+
+
+func test_distance_between_separate_lines_is_the_closest_gap() -> void:
+	var beyond: PackedVector2Array = PackedVector2Array([Vector2(36, 8), Vector2(60, 40)])
+
+	assert_eq(Polyline.distance_between(RIGHTWARDS, beyond), 10.0)
+
+
 func test_extent_along_gives_lowest_and_highest_positions() -> void:
 	assert_eq(Polyline.extent_along(RIGHTWARDS, Vector2(10, 0), Vector2.RIGHT), Vector2(-10, 20))

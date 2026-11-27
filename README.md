@@ -1,10 +1,8 @@
-# Roundabouts
-
-*(working title)*
+# Roundabouts Are Better
 
 **A traffic light simulator in which you do your very best, and then a roundabout does it better.**
 
-Roundabouts is a light-hearted indie puzzle/simulation game. You are handed a road junction, a box of traffic lights, a handful of sensors and a controller to program. Your job is to keep the traffic flowing. Your reward is a 15-second demonstration of how a roundabout would have handled it.
+Roundabouts Are Better is a light-hearted indie puzzle/simulation game. You are handed a road junction, a box of traffic lights, a handful of sensors and a controller to program. Your job is to keep the traffic flowing. Your reward is a 15-second demonstration of how a roundabout would have handled it.
 
 ## The idea
 
@@ -72,7 +70,7 @@ Your score is then shown alongside the roundabout's score. This is not to make y
 
 ## Tone
 
-Roundabouts is a proper simulation with a silly heart. The traffic model is real enough that clever solutions genuinely work, and the game never takes itself seriously while showing you that. Dry humour, passive-aggressive council memos, and an unshakeable editorial position on circular junctions.
+Roundabouts Are Better is a proper simulation with a silly heart. The traffic model is real enough that clever solutions genuinely work, and the game never takes itself seriously while showing you that. Dry humour, passive-aggressive council memos, and an unshakeable editorial position on circular junctions.
 
 ## Sharing levels
 
@@ -116,7 +114,7 @@ Early concept. Nothing is playable yet.
 
 - **Screenshot-to-level detection**: how the road layout is read from an image is not yet chosen, and is the riskiest feature in the game.
 - **Left- or right-hand traffic**: both, presumably, chosen per level.
-- **The name**: "Roundabouts" gives away the ending. This may be a feature.
+- **The name**: "Roundabouts Are Better" gives away the ending. This is a feature.
 
 ## Licence
 

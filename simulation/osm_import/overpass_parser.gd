@@ -19,9 +19,11 @@ static func parse(text: String) -> OsmExtract:
 	for element: Dictionary in _elements_of_type(elements, "way"):
 		var tags: Dictionary[String, String] = _tags(element)
 		if tags.has("highway"):
-			extract.roads.append(
-				OsmRoad.new(int(element.get("id", 0)), tags, _points(element, nodes))
-			)
+			var ids: PackedInt64Array = _node_ids(element, nodes)
+			var points: Array[GeoPoint] = []
+			for id: int in ids:
+				points.append(nodes[id])
+			extract.roads.append(OsmRoad.new(int(element.get("id", 0)), tags, ids, points))
 	return extract
 
 
@@ -56,11 +58,12 @@ static func _tags(element: Dictionary) -> Dictionary[String, String]:
 	return tags
 
 
-static func _points(way: Dictionary, nodes: Dictionary[int, GeoPoint]) -> Array[GeoPoint]:
-	var points: Array[GeoPoint] = []
-	var ids: Variant = way.get("nodes")
-	if ids is Array:
-		for id: Variant in ids:
+## Returns the ids of the nodes along [param way] that are in [param nodes].
+static func _node_ids(way: Dictionary, nodes: Dictionary[int, GeoPoint]) -> PackedInt64Array:
+	var ids: PackedInt64Array = PackedInt64Array()
+	var raw: Variant = way.get("nodes")
+	if raw is Array:
+		for id: Variant in raw:
 			if nodes.has(int(id)):
-				points.append(nodes[int(id)])
-	return points
+				ids.append(int(id))
+	return ids

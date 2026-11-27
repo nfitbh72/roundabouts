@@ -3,11 +3,15 @@ extends RefCounted
 ## Redraws OpenStreetMap roads as a [MapOutline]: each centre line widened into
 ## lanes, in metres across a square around the chosen point.
 ##
-## Junctions are shaped crudely. Where roads meet, each road's lines stop where
-## they run onto another road's tarmac, which leaves the corners open.
+## Junctions are shaped simply. A road split into several ways is joined back
+## into one. Where different roads meet, each road's lines stop where they run
+## onto another road's tarmac, and the edges that meet there are joined into
+## kerbs with rounded corners.
 
 ## Width of every lane, in metres. Real lanes are 3.0 to 3.7 metres wide.
 const LANE_WIDTH: float = 3.5
+## How far back from a corner its kerb starts to curve, in metres.
+const CORNER_RADIUS: float = 6.0
 ## Pieces of line shorter than this, in metres, are left out as slivers.
 const SHORTEST_PIECE: float = 1.0
 
@@ -17,7 +21,9 @@ const SHORTEST_PIECE: float = 1.0
 ## metres from the square's north-west corner.
 static func build(extract: OsmExtract, centre: GeoPoint, radius: float) -> MapOutline:
 	var size: Vector2 = Vector2(radius, radius) * 2.0
-	var strips: Array[RoadStrip] = strips_of(extract.roads, centre, Vector2(radius, radius))
+	var strips: Array[RoadStrip] = RoadChains.chained(
+		strips_of(extract.roads, centre, Vector2(radius, radius)), LANE_WIDTH
+	)
 	var areas: Array[PackedVector2Array] = []
 	for strip: RoadStrip in strips:
 		areas.append(strip.area())
@@ -29,7 +35,15 @@ static func build(extract: OsmExtract, centre: GeoPoint, radius: float) -> MapOu
 		var own_edges: Array[PackedVector2Array] = [strip.left_edge, strip.right_edge]
 		edges.append_array(_visible(own_edges, index, areas, box))
 		lanes.append_array(_visible(strip.dividers, index, areas, box))
-	return MapOutline.new(Vector2i(size.round()), edges, lanes)
+	var kerbs: Array[PackedVector2Array] = KerbCorners.joined(edges, CORNER_RADIUS)
+	return (
+		MapOutline
+		. new(
+			Vector2i(size.round()),
+			LineClip.at_least(kerbs, SHORTEST_PIECE),
+			LineClip.at_least(lanes, SHORTEST_PIECE),
+		)
+	)
 
 
 ## Returns a strip for every drivable road in [param roads], in metres from
@@ -42,7 +56,9 @@ static func strips_of(roads: Array[OsmRoad], centre: GeoPoint, shift: Vector2) -
 			continue
 		var lanes: RoadLanes = RoadLanes.from_tags(road.tags)
 		var shifted: PackedVector2Array = Transform2D(0.0, shift) * line
-		strips.append(RoadStrip.along(shifted, lanes.total, lanes.way_position, LANE_WIDTH))
+		var strip: RoadStrip = RoadStrip.along(shifted, lanes.total, lanes.way_position, LANE_WIDTH)
+		strip.nodes = road.node_ids
+		strips.append(strip)
 	return strips
 
 
@@ -58,4 +74,4 @@ static func _visible(
 	for index: int in areas.size():
 		if index != own:
 			pieces = LineClip.outside(pieces, areas[index])
-	return LineClip.at_least(pieces, SHORTEST_PIECE)
+	return pieces

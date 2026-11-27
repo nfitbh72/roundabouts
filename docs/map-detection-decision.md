@@ -111,12 +111,17 @@ Working at one standard scale was tried: measure the lane width from a first loo
 
 Built in `simulation/osm_import/`, with the network request in `display/osm/osm_importer.gd`. The title screen has latitude and longitude fields and a **Fetch from OpenStreetMap** button. The game asks the public Overpass API for every road for cars in a 300-metre square, widens each road's line into lanes 3.5 metres wide, and draws the result with the same `MapOutlineView` as a screenshot, with "© OpenStreetMap contributors" in the corner, linked to the copyright page. No image is involved at any point.
 
-Steps 2 to 5 are built. Step 6 is crude: each road's lines stop where they run onto another road's tarmac, which clears the middle of the junction but leaves the corners open. Placing the point is typing coordinates, standing in for step 1.
+Steps 2 to 6 are built, step 6 simply. Placing the point is typing coordinates, standing in for step 1. Junctions are shaped in three passes:
+
+1. **Rejoin split roads.** OpenStreetMap splits a road into a new way wherever its tags change, which at Hornsby happens every few dozen metres. Ways that share an end node are joined back into one strip when they are the only two there, or when they carry straight on (turning by less than 35°) while another road branches off, as where the slip road joins the B83. Where the lane count changes, the edges taper over about three metres per metre of step, lane lines that line up carry on, and the line of a new lane starts at the joint.
+2. **Clear the junction.** Each road's lines stop where they run onto another road's tarmac.
+3. **Join the kerbs.** Where one road's edge stops at another's, the two cut ends land on the same point. Edges that meet there are joined into one kerb, with the corner rounded off over up to six metres. Edges that meet all the way round become closed islands.
 
 On the Hornsby junction (-33.70849, 151.09851, between the two nodes the B83 shares with Pretoria Parade) it draws:
 
 - **every arm, in full and to scale:** the B83 north and east of the junction, Pretoria Parade, College Crescent and the side streets around them, with straight, unbroken edges
-- **the shape of the junction:** the B83 north of the junction as two one-way carriageways, the two-lane left-turn slip road from the north arm to the east arm, and College Crescent's split approach around its traffic island
+- **the shape of the junction:** the B83 north of the junction as two one-way carriageways with a median between them, the two-lane left-turn slip road from the north arm to the east arm with its triangular island, and College Crescent's split approach around its traffic island
+- **continuous kerbs:** every corner rounded, the slip road merging smoothly into the B83, the median and both islands closed with rounded noses, and Pretoria Parade tapering where it widens
 - **a believable lane count on every arm**, because every road at the junction has its lanes tagged
 
 What OpenStreetMap knows about Hornsby, within 70 metres of the junction:
@@ -139,11 +144,13 @@ What OpenStreetMap knows about Hornsby, within 70 metres of the junction:
 | --- | --- | --- |
 | Arms drawn | lane lines on every arm; edges on parts of four arms | every arm, with both edges |
 | Lane counts | guessed from the lines found | tagged on every road at the junction, with turn arrows |
-| Slip road, carriageways, islands | not found | all present |
+| Slip road, carriageways, islands | not found | all present, with rounded kerbs |
 | Scale | unknown | exact |
 | Positions | within a pixel or two where found | follow the mapped lines; widths assumed, so a lane or so out where the real lanes are wider or narrower |
 | Signals and crossings | none | where they are, and which way they face |
 | What breaks it | a different capture of the same place | a busy server: 4 of 9 requests in an hour failed, twice "at capacity" and twice with no answer within 40 seconds |
+
+Still missing from the junction: lane lines stop at its edge rather than guiding traffic through it, they are also cut where a side road meets a main road, every corner gets the same six-metre radius, and there are no stop lines or crossings drawn yet, though OpenStreetMap knows where they are.
 
 For Hornsby, OpenStreetMap is better on almost everything a player would otherwise fix in the editor. Its weakness is exact positions: a mapped line can be a metre or two off, and lane widths are assumed. The hybrid suggested below would cover exactly that.
 

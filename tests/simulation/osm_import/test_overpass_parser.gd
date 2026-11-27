@@ -19,6 +19,7 @@ func test_roads_keep_their_tags() -> void:
 func test_roads_follow_their_nodes_in_order() -> void:
 	var road: OsmRoad = Crossroads.extract().roads[0]
 
+	assert_eq(road.node_ids, PackedInt64Array([1, 2, 3]))
 	assert_eq(road.points.size(), 3)
 	assert_eq(road.points[0].longitude, -0.0009)
 	assert_eq(road.points[2].longitude, 0.0009)
@@ -38,7 +39,10 @@ func test_missing_nodes_are_left_out() -> void:
 		+ '{"type": "way", "id": 9, "nodes": [1, 2], "tags": {"highway": "primary"}}]}'
 	)
 
-	assert_eq(OverpassParser.parse(text).roads[0].points.size(), 1)
+	var road: OsmRoad = OverpassParser.parse(text).roads[0]
+
+	assert_eq(road.node_ids, PackedInt64Array([1]))
+	assert_eq(road.points.size(), 1)
 
 
 func test_text_that_is_not_json_gives_nothing() -> void:

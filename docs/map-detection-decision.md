@@ -62,13 +62,13 @@ Each wrong edge found along the way was replaced by a rule that leaves the edge 
 
 ### A second Hornsby screenshot
 
-A sharper capture of the same junction (1887 × 1518, with lanes about twice as wide in pixels) did worse: more lines that follow kerbs and medians, the clearly visible dashes on the Pacific Highway missed, and three road edges at the usual working size or none at full size.
+A sharper capture of the same junction (1887 × 1518) did worse: more lines that follow kerbs and medians, the clearly visible dashes on the Pacific Highway missed, and three road edges at the usual working size or none at full size.
 
-The cause is that every setting is a fixed number of pixels, tuned on the first screenshot, where a lane was about 34 pixels wide. At twice the zoom, dashes look too far apart to chain and lanes look too wide to be lanes, while kerb lines broken up by image compression look just like dashes did before.
+Every setting is a fixed number of pixels, tuned on the first screenshot, where a lane was about 34 pixels wide. That explains the failure at full size, where lanes are about 50 pixels wide. It does not explain the failure at the usual working size, where lanes measure about 35 pixels, the same as the first screenshot. There the difference is the capture itself: a different aerial photo, different shadows, and street names and road numbers written along every road.
 
-The fix is to work at one standard scale rather than retune: measure the lane width first, resize the screenshot so a lane is always about 34 pixels wide, and only then run the steps above. This turns the zoom a player captured at from a problem into a measurement. It also suggests asking players to turn map labels off, since this capture had street names and road numbers painted along every road.
+Working at one standard scale was tried: measure the lane width from a first look for lane lines, resize the screenshot so a lane is 34 pixels wide, then look again. The measurement itself is reliable, agreeing to within a few pixels at every size tried. But on copies of the first screenshot shrunk and enlarged to imitate other zoom levels, it changed the results by at most one line and one edge. Resizing cannot restore detail a capture never had. The code was set aside rather than committed.
 
-### Known weaknesses
+### Known weaknesses### Known weaknesses
 
 - Roads with no markings, or with worn paint, give it nothing to work with.
 - Cars, shadows, trees and map labels cover or break up the paint.
@@ -106,6 +106,12 @@ The fix is to work at one standard scale rather than retune: measure the lane wi
 - **Detail varies by place.** Some areas have every lane and turn arrow tagged, others only the road's centre line. Defaults will be wrong sometimes.
 - **Roads are mapped as centre lines.** Edges and lanes are built from offsets, so slip lanes, islands and odd junction shapes come out simplified.
 - **Import needs a connection,** unless data is bundled or cached.
+
+## Where this stands, 27 November 2026
+
+Lanes first has reached the point where each fix is tuned to the screenshot in front of it. On the first Hornsby screenshot every edge it draws is real, but it draws too little. On a sharper screenshot of the same junction it does worse, for reasons that have little to do with the junction itself: the aerial photo, the shadows and the map labels. A capture of the same place should not change the answer this much.
+
+So the next step is the OpenStreetMap prototype, with the trial tool (`tools/try_maps.sh`) and the lanes-first code kept as they are for the comparison. A hybrid remains possible: OpenStreetMap for the layout and lane counts, and the screenshot only to refine where the lines sit.
 
 ## Things common to both
 

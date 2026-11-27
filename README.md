@@ -114,7 +114,6 @@ Early concept. Nothing is playable yet.
 
 - **Screenshot-to-level detection**: how the road layout is read from an image is not yet chosen, and is the riskiest feature in the game.
 - **Left- or right-hand traffic**: both, presumably, chosen per level.
-- **The name**: "Roundabouts Are Better" gives away the ending. This is a feature.
 
 ## Licence
 

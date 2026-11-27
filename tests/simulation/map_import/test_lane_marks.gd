@@ -72,7 +72,7 @@ func test_find_keeps_marks_on_tarmac_and_drops_the_rest() -> void:
 	marking.set_bit_rect(Rect2i(10, 5, 15, 2), true)
 
 	var marks: Array[PackedVector2Array] = LaneMarks.find(
-		marking, _mask_with(Rect2i(0, 15, 60, 30))
+		PixelComponents.find(marking), _mask_with(Rect2i(0, 15, 60, 30))
 	)
 
 	assert_eq(marks.size(), 1)

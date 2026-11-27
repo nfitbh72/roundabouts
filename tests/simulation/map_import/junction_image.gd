@@ -32,3 +32,10 @@ static func horizontal_road(size: Vector2i, top: int, lane_width: int, lane_coun
 static func paint_dashes(image: Image, y: int) -> void:
 	for x: int in range(0, image.get_width(), DASH + DASH_GAP):
 		image.fill_rect(Rect2i(x, y - 1, DASH, 2), PAINT)
+
+
+## Paints a row of two-pixel paint specks across [param image], centred on
+## [param y] and [param spacing] pixels apart: a dashed line too faint to make marks.
+static func paint_specks(image: Image, y: int, spacing: int) -> void:
+	for x: int in range(spacing / 2, image.get_width(), spacing):
+		image.fill_rect(Rect2i(x - 1, y - 1, 2, 2), PAINT)

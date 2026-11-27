@@ -6,6 +6,14 @@ const LANE_WIDTH: int = 20
 const LANE_COUNT: int = 3
 
 
+## A road whose only lane line is a row of specks, too faint to make marks.
+func _road_with_specks() -> Image:
+	var image: Image = JunctionImage.grass(SIZE)
+	image.fill_rect(Rect2i(0, ROAD_TOP, SIZE.x, LANE_WIDTH * 3), JunctionImage.TARMAC)
+	JunctionImage.paint_specks(image, ROAD_TOP + LANE_WIDTH, 10)
+	return image
+
+
 func _road_outline() -> MapOutline:
 	return MapConverter.from_image(
 		JunctionImage.horizontal_road(SIZE, ROAD_TOP, LANE_WIDTH, LANE_COUNT)
@@ -30,6 +38,17 @@ func test_the_road_has_an_edge_along_each_side() -> void:
 	heights.sort()
 	assert_almost_eq(heights[0], float(ROAD_TOP), 1.5)
 	assert_almost_eq(heights[1], float(ROAD_TOP + LANE_WIDTH * LANE_COUNT), 1.5)
+
+
+func test_a_faint_dotted_line_becomes_a_lane_line() -> void:
+	var outline: MapOutline = MapConverter.from_image(_road_with_specks())
+
+	assert_eq(outline.lane_lines.size(), 1)
+	assert_almost_eq(Polyline.centre(outline.lane_lines[0]).y, float(ROAD_TOP + LANE_WIDTH), 1.0)
+
+
+func test_road_edges_are_built_from_chained_lane_lines_only() -> void:
+	assert_eq(MapConverter.from_image(_road_with_specks()).road_edges.size(), 0)
 
 
 func test_a_field_has_no_roads() -> void:

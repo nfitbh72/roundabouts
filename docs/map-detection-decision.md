@@ -38,6 +38,8 @@ Instead of finding the road and then the lanes inside it, find the lanes and bui
 1. **Find paint.** Pixels clearly brighter than the area around them (or yellow), grouped into connected marks. Judging brightness against the surroundings, rather than against a fixed level, picks up worn paint.
 2. **Keep lane-like marks.** A mark must be long and thin, with tarmac on both sides. This rejects roof edges, building outlines and the white lines along the kerb.
 3. **Chain dashes into lane lines.** Join marks that point the same way and line up end to end, allowing for gentle curves. Prototype settings: directions within 20°, gaps up to 45 pixels, and a sideways drift of up to 3 pixels plus 12% of the distance. Keep chains of three or more marks spanning at least 60 pixels. Each chain becomes a smoothed line through its marks. Lone solid lines are left out for now, because they are as often the edge of a building or kerb as a line between lanes.
+
+   Dashes too faint or distant to make marks break up into specks of a pixel or two. These are found separately: a Hough transform finds straight rows of specks on tarmac, and a row counts as a lane line only if the colour either side matches. A kerb has road on one side and pavement on the other, and fails that test even where the pavement is as grey as the road.
 4. **Group lane lines into roads.** Lane lines that run roughly parallel and about one lane width apart belong to the same carriageway.
 5. **Measure the lane width** from the spacing between neighbouring lane lines.
 6. **Place the road edges** by stepping outwards from the outermost lane line on each side until the tarmac ends, between 0.4 and 2 lane widths away. Where that is unclear along most of the line, draw no edge at all: a missing edge is easier to spot and fix than a wrong one.
@@ -47,17 +49,16 @@ Instead of finding the road and then the lanes inside it, find the lanes and bui
 
 Steps 1 to 6 are built, in `simulation/map_import/`. Step 7 is not. On the Hornsby screenshot, conversion takes under a second and finds:
 
-- two lane lines on the B83 north of the junction, with the western kerb
-- the centre line of Pretoria Parade, in two pieces either side of the map label, with its northern edge
-- the centre line of College Cres, with its western kerb
+- lane lines on every arm: two on the B83 north of the junction, three on the eastern B83 (from rows of specks), and the centre lines of Pretoria Parade and College Cres
+- road edges along the western kerb of the B83, the northern side of Pretoria Parade and the western kerb of College Cres
 
-Nothing is drawn on the car park, the roofs or the pavements, which was the problem with colour-traced edges. What it misses:
+Nothing is drawn on the car park, the roofs or the pavements. What it gets wrong or misses:
 
-- **The eastern arm of the B83.** Its dashes are now detected as paint, but they are short and widely spaced at this zoom and do not chain.
-- **Many edges.** Where the road's tarmac merges with a car park or footpath, stepping outwards finds no clear end, so no edge is drawn.
-- **The junction itself**, which has no lane lines and waits for step 7.
+- **Junction markings.** Stop lines and the edges of the pedestrian crossings are rows of paint on tarmac too, so they come out as lane lines.
+- **Most edges.** Where the tarmac merges with a car park or footpath, stepping outwards finds no clear end. Lines found as rows of specks are not yet used for edges at all: when they were, a row along a kerb put an edge on a church roof.
+- **The junction itself**, which waits for step 7.
 
-The lines also wobble slightly, because each one follows its dashes closely. In short, what it draws is mostly right, but it draws too little. The next gains are in chaining fainter, sparser dashes and in step 7.
+The next gain is in step 6: stepping outwards until the colour stops matching the tarmac beside the lane line, rather than until the colour-classified road mask ends. That is the same matching-sides idea that tells kerbs from lane lines, and it should give the eastern arm its edges.
 
 ### Known weaknesses
 

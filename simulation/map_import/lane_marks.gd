@@ -16,11 +16,11 @@ const SIDE_SAMPLES: int = 9
 const MIN_TARMAC_SHARE: float = 0.6
 
 
-## Returns a two-point line for each lane-like mark in [param marking], using
-## [param surface] to check for tarmac on both sides.
-static func find(marking: BitMap, surface: BitMap) -> Array[PackedVector2Array]:
+## Returns a two-point line for each lane-like mark among the paint
+## [param shapes], using [param surface] to check for tarmac on both sides.
+static func find(shapes: Array[PackedVector2Array], surface: BitMap) -> Array[PackedVector2Array]:
 	var marks: Array[PackedVector2Array] = []
-	for shape: PackedVector2Array in PixelComponents.find(marking):
+	for shape: PackedVector2Array in shapes:
 		var line: PackedVector2Array = line_through(shape)
 		if not line.is_empty() and has_tarmac_both_sides(line, surface):
 			marks.append(line)

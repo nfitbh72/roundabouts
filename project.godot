@@ -12,8 +12,8 @@ config_version=5
 
 config/name="Roundabouts"
 config/description="A traffic light simulator in which you do your very best, and then a roundabout does it better."
-run/main_scene="res://main/main.tscn"
-config/icon="res://icon.svg"
+run/main_scene="res://display/main.tscn"
+config/icon="res://assets/icon.svg"
 
 [display]
 

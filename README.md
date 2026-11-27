@@ -94,6 +94,8 @@ Built with [Godot 4](https://godotengine.org/), developed on macOS, with Steam i
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or **Cmd+B** on macOS) to run.
 
+Conventions, folder layout and commands for contributors are in [CLAUDE.md](CLAUDE.md).
+
 ## Status
 
 Early concept. Nothing is playable yet.

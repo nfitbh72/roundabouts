@@ -64,6 +64,9 @@ Only files that tools require at the root live there: `project.godot`, `README.m
 | Run every pre-commit check | `tools/check.sh` |
 | Reformat, then run every check | `tools/check.sh --fix` |
 | Run the tests only | `godot --headless -s addons/gut/gut_cmdln.gd -gconfig=res://tests/gutconfig.json` |
+| Try map import on a folder of screenshots | `tools/try_maps.sh <folder>` |
+
+`tools/try_maps.sh` runs map import on every screenshot in a folder and writes a page showing what it found in each, with counts compared to the last run. Screenshots and results must stay outside the repository, and the script refuses to run otherwise.
 
 `tools/check.sh` checks formatting, lints, loads the project headlessly and runs the tests. It covers our own GDScript and skips `addons/`. It fails on any engine error or warning, on failing tests, and on tests that pass but leave orphaned nodes behind or make no assertions.
 

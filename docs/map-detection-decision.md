@@ -60,6 +60,14 @@ Nothing is drawn on the car park, the roofs or the pavements, and no edge is dra
 
 Each wrong edge found along the way was replaced by a rule that leaves the edge out instead, so what is drawn can be trusted, but too little is drawn. The next gains are in telling kerb specks from lane specks, and in step 7.
 
+### A second Hornsby screenshot
+
+A sharper capture of the same junction (1887 × 1518, with lanes about twice as wide in pixels) did worse: more lines that follow kerbs and medians, the clearly visible dashes on the Pacific Highway missed, and three road edges at the usual working size or none at full size.
+
+The cause is that every setting is a fixed number of pixels, tuned on the first screenshot, where a lane was about 34 pixels wide. At twice the zoom, dashes look too far apart to chain and lanes look too wide to be lanes, while kerb lines broken up by image compression look just like dashes did before.
+
+The fix is to work at one standard scale rather than retune: measure the lane width first, resize the screenshot so a lane is always about 34 pixels wide, and only then run the steps above. This turns the zoom a player captured at from a problem into a measurement. It also suggests asking players to turn map labels off, since this capture had street names and road numbers painted along every road.
+
 ### Known weaknesses
 
 - Roads with no markings, or with worn paint, give it nothing to work with.
@@ -109,7 +117,7 @@ Each wrong edge found along the way was replaced by a rule that leaves the edge 
 ## How the two will be compared
 
 1. Choose about ten junctions of different kinds and countries: a simple crossroads, a large signalised junction, a staggered junction, a junction with slip lanes, one with faded paint and one left-hand-traffic junction. Hornsby is the first.
-2. Run both approaches on each one.
+2. Run both approaches on each one. For the screenshot approach, `tools/try_maps.sh <folder>` converts every screenshot in a folder and writes a page showing the lines found over each screenshot, with lane and edge counts compared to the previous run.
 3. Judge each result by how much a player would have to fix in the level editor before it is playable: missing or extra roads, wrong lane counts, misplaced edges.
 4. Time-box each approach so the comparison happens before either becomes too polished to abandon.
 

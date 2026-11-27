@@ -1,0 +1,2 @@
+# Normalise line endings so the project behaves the same on macOS and Windows
+* text=auto eol=lf

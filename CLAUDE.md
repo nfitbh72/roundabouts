@@ -68,6 +68,11 @@ Only files that tools require at the root live there: `project.godot`, `README.m
 
 Tooling: GUT 9.7.1 lives in `addons/gut/`. `gdformat` and `gdlint` come from gdtoolkit, installed with `pipx install "gdtoolkit==4.*"` into `~/.local/bin`.
 
+## Text content
+
+- Player-facing text lives in plain text files in `assets/`, such as `assets/welcome.txt`, so it can be edited without touching code.
+- Godot does not include `.txt` files in exported builds by default. When export presets are created, add `*.txt` to the non-resource export filter, or the text will be missing from release builds.
+
 ## Decisions
 
 - Record every significant decision as a file in `docs/`, named `<topic>-decision.md`, with a status, a date and the reasoning.

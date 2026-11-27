@@ -78,7 +78,7 @@ Tooling: GUT 9.7.1 lives in `addons/gut/`. `gdformat` and `gdlint` come from gdt
 
 - Record every significant decision as a file in `docs/`, named `<topic>-decision.md`, with a status, a date and the reasoning.
 - Read the existing decisions before proposing something that touches the same area.
-- Decided so far: the engine (`docs/engine-decision.md`) and map conversion (`docs/map-conversion-decision.md`).
+- Decided so far: the engine (`docs/engine-decision.md`), map conversion (`docs/map-conversion-decision.md`) and map detection (`docs/map-detection-decision.md`), which is to try two approaches and compare them.
 - Map conversion is a hard rule: no pixels from an uploaded image may end up in a level file, a thumbnail or anything shared. This applies to pre-made and user-made levels.
 
 ## Before committing

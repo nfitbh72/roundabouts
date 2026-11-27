@@ -112,7 +112,7 @@ Early concept. Nothing is playable yet.
 
 ### Open questions
 
-- **Screenshot-to-level detection**: how the road layout is read from an image is not yet chosen, and is the riskiest feature in the game.
+- **Screenshot-to-level detection**: the riskiest feature in the game. Two approaches are being tried side by side: building roads outwards from detected lane markings, and taking the layout from OpenStreetMap instead. See [docs/map-detection-decision.md](docs/map-detection-decision.md).
 - **Left- or right-hand traffic**: both, presumably, chosen per level.
 
 ## Licence

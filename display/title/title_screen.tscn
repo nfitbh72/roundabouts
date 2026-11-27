@@ -50,3 +50,35 @@ theme_override_colors/font_color = Color(1, 0.55, 0.45, 1)
 theme_override_font_sizes/font_size = 24
 text = "That file isn't an image the game can read. Try a PNG, JPEG or WebP."
 horizontal_alignment = 1
+
+[node name="OsmRow" type="HBoxContainer" parent="Center/Rows"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 16
+
+[node name="Latitude" type="LineEdit" parent="Center/Rows/OsmRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "-33.70849"
+placeholder_text = "Latitude"
+tooltip_text = "Latitude, in degrees north (negative for south)"
+
+[node name="Longitude" type="LineEdit" parent="Center/Rows/OsmRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "151.09851"
+placeholder_text = "Longitude"
+tooltip_text = "Longitude, in degrees east (negative for west)"
+
+[node name="FetchButton" type="Button" parent="Center/Rows/OsmRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Fetch from OpenStreetMap"
+
+[node name="OsmStatus" type="Label" parent="Center/Rows"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1

@@ -68,7 +68,7 @@ Every setting is a fixed number of pixels, tuned on the first screenshot, where 
 
 Working at one standard scale was tried: measure the lane width from a first look for lane lines, resize the screenshot so a lane is 34 pixels wide, then look again. The measurement itself is reliable, agreeing to within a few pixels at every size tried. But on copies of the first screenshot shrunk and enlarged to imitate other zoom levels, it changed the results by at most one line and one edge. Resizing cannot restore detail a capture never had. The code was set aside rather than committed.
 
-### Known weaknesses### Known weaknesses
+### Known weaknesses
 
 - Roads with no markings, or with worn paint, give it nothing to work with.
 - Cars, shadows, trees and map labels cover or break up the paint.
@@ -84,8 +84,8 @@ Working at one standard scale was tried: measure the lane width from a first loo
 
 - The road layout is already known, so there is nothing to detect and no car park to confuse with a road.
 - It is in real-world coordinates, so the scale is exact.
-- Roads are tagged with useful details: `lanes`, `lanes:forward` and `lanes:backward`, `oneway`, `turn:lanes`, and the road type through `highway`.
-- Real traffic signals (`highway=traffic_signals`) and crossings (`highway=crossing`) are mapped in many places. The game could show where the council actually put the lights.
+- Roads are tagged with useful details: `lanes`, `lanes:forward` and `lanes:backward`, `oneway`, `turn:lanes` (and `turn:lanes:forward` and `turn:lanes:backward` on two-way roads), `placement`, and the road type through `highway`.
+- Real traffic signals (`highway=traffic_signals`, often with `traffic_signals:direction`) and crossings (`highway=crossing`, or `crossing=traffic_signals` on a signal node) are mapped in many places. The game could show where the council actually put the lights.
 - The driving side follows from the country.
 - No image is involved at all, which satisfies the map conversion rule trivially.
 
@@ -101,17 +101,70 @@ Working at one standard scale was tried: measure the lane width from a first loo
 ### Known weaknesses
 
 - **It changes the pitch.** The README promises "upload a screenshot of any junction". Picking a place on a map is a different experience, though arguably an easier one for the player.
-- **The licence has obligations.** OpenStreetMap data is under the Open Database Licence (ODbL). The game must credit "© OpenStreetMap contributors". Level files built from the data are probably derivative databases, which would make shared levels ODbL-licensed too. This needs a proper check before launch, and none of this is legal advice.
-- **The public servers are not for products.** The usage policies of the public Overpass, Nominatim (search) and map tile servers rule out heavy use by an app. A released game would need a commercial provider or its own server for data, search and the map shown while picking a place.
+- **The licence has obligations.** OpenStreetMap data is under the Open Database Licence (ODbL). The game must credit OpenStreetMap and make clear the data is under the ODbL; "© OpenStreetMap contributors", linked to openstreetmap.org/copyright, does both. Whether a level file is a derivative database (shared levels would then be ODbL too) or a produced work is not settled: see the prototype result below. This needs a proper check before launch, and none of this is legal advice.
+- **The public Overpass server is not for products.** Its policy says commercial use "should use self-hosted or paid Overpass servers". Nominatim (search) tolerates searches started by players of an app at moderate volume, and the tile server allows apps but not offline use. A released game would need its own or a paid Overpass server at least. Details are in the prototype result below.
 - **Detail varies by place.** Some areas have every lane and turn arrow tagged, others only the road's centre line. Defaults will be wrong sometimes.
-- **Roads are mapped as centre lines.** Edges and lanes are built from offsets, so slip lanes, islands and odd junction shapes come out simplified.
+- **Roads are mapped as single lines.** Edges and lanes are built from offsets, so islands and odd junction shapes come out simplified. Busy roads are often mapped as one line per direction, and a `placement` tag can say the line follows a lane marking rather than the middle of the road, so the offsets must read it.
 - **Import needs a connection,** unless data is bundled or cached.
+
+### Prototype result
+
+Built in `simulation/osm_import/`, with the network request in `display/osm/osm_importer.gd`. The title screen has latitude and longitude fields and a **Fetch from OpenStreetMap** button. The game asks the public Overpass API for every road for cars in a 300-metre square, widens each road's line into lanes 3.5 metres wide, and draws the result with the same `MapOutlineView` as a screenshot, with "© OpenStreetMap contributors" in the corner, linked to the copyright page. No image is involved at any point.
+
+Steps 2 to 5 are built. Step 6 is crude: each road's lines stop where they run onto another road's tarmac, which clears the middle of the junction but leaves the corners open. Placing the point is typing coordinates, standing in for step 1.
+
+On the Hornsby junction (-33.70849, 151.09851, between the two nodes the B83 shares with Pretoria Parade) it draws:
+
+- **every arm, in full and to scale:** the B83 north and east of the junction, Pretoria Parade, College Crescent and the side streets around them, with straight, unbroken edges
+- **the shape of the junction:** the B83 north of the junction as two one-way carriageways, the two-lane left-turn slip road from the north arm to the east arm, and College Crescent's split approach around its traffic island
+- **a believable lane count on every arm**, because every road at the junction has its lanes tagged
+
+What OpenStreetMap knows about Hornsby, within 70 metres of the junction:
+
+| Arm | Tagged |
+| --- | --- |
+| B83 north, southbound | 4 lanes, `turn:lanes=left\|left\|through\|right`, plus the 2-lane slip road (`left\|left`) with a give-way at its end |
+| B83 north, northbound | 2 lanes |
+| B83 east | 4 lanes, 3 towards the junction (`turn:lanes:backward=left;through\|right\|right`) and 1 away, widening to 5 further east; `placement:backward=right_of:3` says the line is drawn between the two directions |
+| Pretoria Parade | 4 lanes at the junction, approach `left\|` (two lanes, the left one turning left), narrowing to 2 |
+| College Crescent | split approach: 1 lane southbound, 2 northbound, joining into 2 two-way lanes |
+
+- **Signals:** five `highway=traffic_signals` nodes within 25 metres of the centre, one for each approach, each with `traffic_signals:direction`, which gives roughly where the stop lines are.
+- **Crossings:** five signalised pedestrian crossings. Two are tagged on the signal node itself (`highway=traffic_signals` with `crossing=traffic_signals`); the rest are `highway=crossing` with `crossing=traffic_signals`, and most have `button_operated` and audible-signal tags. The crossings are also mapped as `footway=crossing` ways. Unsignalled side-street crossings are tagged `crossing=unmarked`.
+- **Not tagged:** lane widths, kerb lines (beyond a few kerb nodes at crossings), stop lines and the signal timings.
+
+#### Compared with lanes first
+
+| | Lanes first (first screenshot) | OpenStreetMap |
+| --- | --- | --- |
+| Arms drawn | lane lines on every arm; edges on parts of four arms | every arm, with both edges |
+| Lane counts | guessed from the lines found | tagged on every road at the junction, with turn arrows |
+| Slip road, carriageways, islands | not found | all present |
+| Scale | unknown | exact |
+| Positions | within a pixel or two where found | follow the mapped lines; widths assumed, so a lane or so out where the real lanes are wider or narrower |
+| Signals and crossings | none | where they are, and which way they face |
+| What breaks it | a different capture of the same place | a busy server: 4 of 9 requests in an hour failed, twice "at capacity" and twice with no answer within 40 seconds |
+
+For Hornsby, OpenStreetMap is better on almost everything a player would otherwise fix in the editor. Its weakness is exact positions: a mapped line can be a metre or two off, and lane widths are assumed. The hybrid suggested below would cover exactly that.
+
+#### What the record got wrong
+
+Checked against the OpenStreetMap wiki and OSM Foundation policies on 27 November 2026:
+
+- **Tags.** The list missed `placement`, `placement:forward` and `placement:backward`, which say which lane marking a way is drawn along. Hornsby needs them: without them, the eastern B83 came out a whole lane off. Signal nodes can double as crossings, so finding crossings means checking `crossing=traffic_signals` on signal nodes as well as `highway=crossing`.
+- **Overpass.** The usage limit for the public server is about 10,000 queries and 1 GB a day, and its documentation lists "setting up an app for more than just OSM mappers and relying on the public instances as backend" as problematic behaviour. A User-Agent identifying the app is required; the game sends `RoundaboutsAreBetter/0.1 (prototype)`. When at capacity, the server itself replies that it "is intended for browser-based and human-operated tools". Fine for this prototype, not for a release.
+- **Nominatim** (address search) is not ruled out for an app. Searches each started by a player are allowed at moderate volume, at most one per second, with an identifying User-Agent, cached results and no search-as-you-type.
+- **Map tiles** for a place picker are allowed for apps, with visible attribution, but not offline. As with Nominatim, access to the OSM Foundation's servers "may be withdrawn at any point" for commercial services.
+- **Attribution.** For games, the attribution guidelines allow the credit on a splash screen, in the game view, the menus or the credits, as long as it links to more information. The prototype shows it whenever OpenStreetMap roads are on screen, which is more than required.
+- **Licence of level files.** The record called them "probably derivative databases". The guidelines do not say. A result is a produced work unless it is meant for getting the original data back out, and a level file is a list of road positions, so it could fall on either side. An extract of fewer than 100 features, taken once, is insubstantial, and one junction is about that size. But repeated extracts for the same project count together, so a game shipping many pre-made junctions may not qualify, and a produced work made from a modified database still has to offer that database under the ODbL. This is for a lawyer before launch.
 
 ## Where this stands, 27 November 2026
 
 Lanes first has reached the point where each fix is tuned to the screenshot in front of it. On the first Hornsby screenshot every edge it draws is real, but it draws too little. On a sharper screenshot of the same junction it does worse, for reasons that have little to do with the junction itself: the aerial photo, the shadows and the map labels. A capture of the same place should not change the answer this much.
 
 So the next step is the OpenStreetMap prototype, with the trial tool (`tools/try_maps.sh`) and the lanes-first code kept as they are for the comparison. A hybrid remains possible: OpenStreetMap for the layout and lane counts, and the screenshot only to refine where the lines sit.
+
+The OpenStreetMap prototype now exists, and on Hornsby it beats lanes first on layout, lane counts, scale and signals. The comparison still needs the other junctions on the list before choosing, especially ones less carefully mapped than Hornsby.
 
 ## Things common to both
 
@@ -131,5 +184,6 @@ Screenshots used for testing are copyrighted by the map services. They stay outs
 
 ## Caveats
 
-- Licence terms and usage policies were written from general knowledge in November 2026 and were not checked against the current OpenStreetMap Foundation policies. Verify before building on them.
-- The prototype figures come from a single screenshot. They show the direction is promising, not that it works in general.
+- The licence and usage-policy notes in the Approach 2 weaknesses and prototype result were checked against the OpenStreetMap wiki and OSM Foundation pages on 27 November 2026. They are a reading of those pages, not legal advice.
+- The OpenStreetMap result comes from a single, well-mapped junction. Detail varies a lot from place to place.
+- The lanes-first figures come from a single screenshot. They show the direction is promising, not that it works in general.

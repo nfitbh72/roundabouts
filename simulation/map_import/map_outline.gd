@@ -1,9 +1,10 @@
 class_name MapOutline
 extends RefCounted
-## The lines found in a junction screenshot, ready to be redrawn in the game's own style.
+## The lines of a junction, ready to be redrawn in the game's own style.
 ##
-## Holds only line geometry, in the pixel coordinates of the converted image.
-## Nothing of the image itself is kept.
+## Holds only line geometry: in the pixel coordinates of the converted image
+## for a screenshot, or in metres for OpenStreetMap data. Nothing of any image
+## is kept.
 
 ## Width and height of the area the lines were found in.
 var size: Vector2i

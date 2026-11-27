@@ -35,22 +35,3 @@ func test_the_original_mask_is_left_untouched() -> void:
 	RoadMask.from_surface(surface)
 
 	assert_true(surface.get_bit(10, 5))
-
-
-func test_reliable_area_leaves_out_a_band_around_the_edge() -> void:
-	var inset: int = RoadMask.FILL_RADIUS + RoadMask.SPECK_RADIUS
-
-	var area: Rect2i = RoadMask.reliable_area(SIZE)
-
-	assert_eq(area, Rect2i(inset, inset, SIZE.x - inset * 2, SIZE.y - inset * 2))
-
-
-func test_reliable_area_of_a_tiny_mask_is_empty() -> void:
-	assert_eq(RoadMask.reliable_area(Vector2i(2, 2)).size, Vector2i.ZERO)
-
-
-func test_shrunk_pulls_the_road_in_from_its_edges() -> void:
-	var inner: BitMap = RoadMask.shrunk(_band(), 3)
-
-	assert_false(inner.get_bit(30, 21))
-	assert_true(inner.get_bit(30, 30))

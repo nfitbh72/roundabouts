@@ -11,15 +11,20 @@ const MAX_SIDE: int = 1280
 
 
 ## Returns the road edges and lane lines found in [param image].
+##
+## Works lanes first: finds the painted lane lines, then builds each road
+## outwards from them. See docs/map-detection-decision.md.
 static func from_image(image: Image) -> MapOutline:
 	var working: Image = working_copy(image)
 	var surface: BitMap = PixelClassifier.mask(working, PixelClassifier.Kind.SURFACE)
 	var marking: BitMap = PixelClassifier.mask(working, PixelClassifier.Kind.MARKING)
+	var lane_lines: Array[PackedVector2Array] = LaneChains.join(LaneMarks.find(marking, surface))
 	var road: BitMap = RoadMask.from_surface(surface)
-	var area: Rect2i = RoadMask.reliable_area(road.get_size())
-	return MapOutline.new(
-		working.get_size(), RoadEdges.trace(road, area), LaneLines.find(marking, road)
-	)
+	var width: float = LaneGroups.lane_width(lane_lines)
+	var road_edges: Array[PackedVector2Array] = []
+	for lines: Array[PackedVector2Array] in LaneGroups.group(lane_lines, width):
+		road_edges.append_array(LaneRoadEdges.edges_of(lines, width, road))
+	return MapOutline.new(working.get_size(), road_edges, lane_lines)
 
 
 ## Returns a copy of [param image] in 8-bit RGBA, scaled down if it is too large.

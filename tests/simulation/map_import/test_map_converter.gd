@@ -1,33 +1,35 @@
 extends GutTest
 
-const SIZE: Vector2i = Vector2i(200, 120)
+const SIZE: Vector2i = Vector2i(240, 140)
 const ROAD_TOP: int = 40
-const ROAD_BOTTOM: int = 80
+const LANE_WIDTH: int = 20
+const LANE_COUNT: int = 3
 
 
 func _road_outline() -> MapOutline:
-	return MapConverter.from_image(JunctionImage.horizontal_road(SIZE, ROAD_TOP, ROAD_BOTTOM))
+	return MapConverter.from_image(
+		JunctionImage.horizontal_road(SIZE, ROAD_TOP, LANE_WIDTH, LANE_COUNT)
+	)
 
 
-func test_a_straight_road_has_an_edge_on_each_side() -> void:
+func test_each_dashed_line_becomes_one_lane_line() -> void:
+	var outline: MapOutline = _road_outline()
+
+	assert_eq(outline.lane_lines.size(), LANE_COUNT - 1)
+	for line: PackedVector2Array in outline.lane_lines:
+		assert_gt(Polyline.length(line), SIZE.x * 0.8)
+
+
+func test_the_road_has_an_edge_along_each_side() -> void:
 	var outline: MapOutline = _road_outline()
 
 	assert_eq(outline.road_edges.size(), 2)
-	var top_edge: PackedVector2Array = outline.road_edges[0]
-	var bottom_edge: PackedVector2Array = outline.road_edges[1]
-	if top_edge[0].y > bottom_edge[0].y:
-		top_edge = outline.road_edges[1]
-		bottom_edge = outline.road_edges[0]
-	_assert_runs_along(top_edge, ROAD_TOP)
-	_assert_runs_along(bottom_edge, ROAD_BOTTOM)
-
-
-func test_the_dashed_centre_line_becomes_lane_lines() -> void:
-	var outline: MapOutline = _road_outline()
-
-	assert_gt(outline.lane_lines.size(), 5)
-	for line: PackedVector2Array in outline.lane_lines:
-		assert_almost_eq(line[0].y, (ROAD_TOP + ROAD_BOTTOM) / 2.0, 1.0)
+	var heights: Array[float] = []
+	for edge: PackedVector2Array in outline.road_edges:
+		heights.append(Polyline.centre(edge).y)
+	heights.sort()
+	assert_almost_eq(heights[0], float(ROAD_TOP), 1.5)
+	assert_almost_eq(heights[1], float(ROAD_TOP + LANE_WIDTH * LANE_COUNT), 1.5)
 
 
 func test_a_field_has_no_roads() -> void:
@@ -35,6 +37,13 @@ func test_a_field_has_no_roads() -> void:
 
 	assert_eq(outline.road_edges.size(), 0)
 	assert_eq(outline.lane_lines.size(), 0)
+
+
+func test_tarmac_without_lane_lines_is_not_a_road() -> void:
+	var image: Image = JunctionImage.grass(SIZE)
+	image.fill_rect(Rect2i(0, ROAD_TOP, SIZE.x, 60), JunctionImage.TARMAC)
+
+	assert_eq(MapConverter.from_image(image).road_edges.size(), 0)
 
 
 func test_the_outline_is_the_size_of_the_image() -> void:
@@ -63,8 +72,3 @@ func test_the_original_image_is_left_untouched() -> void:
 	MapConverter.working_copy(image)
 
 	assert_eq(image.get_width(), MapConverter.MAX_SIDE * 2)
-
-
-func _assert_runs_along(line: PackedVector2Array, y: int) -> void:
-	for point: Vector2 in line:
-		assert_almost_eq(point.y, float(y), 1.0)

@@ -18,18 +18,3 @@ static func from_surface(surface: BitMap) -> BitMap:
 	road.grow_mask(-SPECK_RADIUS, whole)
 	road.grow_mask(SPECK_RADIUS, whole)
 	return road
-
-
-## Returns the part of a mask of [param size] that the clean-up can be trusted in.
-## Shrinking treats everything beyond the image as empty, so a thin band around
-## the edge loses its road. Anything outside this area should be ignored.
-static func reliable_area(size: Vector2i) -> Rect2i:
-	var inset: Vector2i = Vector2i.ONE * (FILL_RADIUS + SPECK_RADIUS)
-	return Rect2i(inset, (size - inset * 2).max(Vector2i.ZERO))
-
-
-## Returns a copy of [param road] shrunk inwards by [param distance] pixels.
-static func shrunk(road: BitMap, distance: int) -> BitMap:
-	var inner: BitMap = road.duplicate() as BitMap
-	inner.grow_mask(-distance, Rect2i(Vector2i.ZERO, inner.get_size()))
-	return inner

@@ -35,21 +35,29 @@ Instead of finding the road and then the lanes inside it, find the lanes and bui
 
 ### Steps
 
-1. **Find paint.** White and yellow pixels, grouped into connected marks. This already exists.
+1. **Find paint.** Pixels clearly brighter than the area around them (or yellow), grouped into connected marks. Judging brightness against the surroundings, rather than against a fixed level, picks up worn paint.
 2. **Keep lane-like marks.** A mark must be long and thin, with tarmac on both sides. This rejects roof edges, building outlines and the white lines along the kerb.
-3. **Chain dashes into lane lines.** Join marks that point the same way and line up end to end, allowing for gentle curves. Prototype settings: directions within 20°, gaps up to 45 pixels, and a sideways drift of up to 3 pixels plus 12% of the distance. Keep chains at least 60 pixels long made of three or more marks, or single solid lines at least 90 pixels long.
+3. **Chain dashes into lane lines.** Join marks that point the same way and line up end to end, allowing for gentle curves. Prototype settings: directions within 20°, gaps up to 45 pixels, and a sideways drift of up to 3 pixels plus 12% of the distance. Keep chains of three or more marks spanning at least 60 pixels. Each chain becomes a smoothed line through its marks. Lone solid lines are left out for now, because they are as often the edge of a building or kerb as a line between lanes.
 4. **Group lane lines into roads.** Lane lines that run roughly parallel and about one lane width apart belong to the same carriageway.
-5. **Measure the lane width** from the spacing between neighbouring lane lines in each group.
-6. **Place the road edges** one lane width outside the outermost lane line on each side. Where the tarmac boundary is close to that line, snap to it.
+5. **Measure the lane width** from the spacing between neighbouring lane lines.
+6. **Place the road edges** by stepping outwards from the outermost lane line on each side until the tarmac ends, between 0.4 and 2 lane widths away. Where that is unclear along most of the line, draw no edge at all: a missing edge is easier to spot and fix than a wrong one.
 7. **Join the roads up at the junction**, by extending the edges until they meet.
 
 ### Prototype result
 
-On the Hornsby screenshot, steps 1 to 3 found the two dashed lane lines on the northern B83 and the centre line of Pretoria Parade, and rejected the car park bays and most roof edges. Problems:
+Steps 1 to 6 are built, in `simulation/map_import/`. Step 7 is not. On the Hornsby screenshot, conversion takes under a second and finds:
 
-- The College Cres dashes were lost, because cars and shadows beside them failed the "tarmac on both sides" test.
-- The faint dashes on the eastern B83 were missed.
-- One building edge was still accepted as a lane line.
+- two lane lines on the B83 north of the junction, with the western kerb
+- the centre line of Pretoria Parade, in two pieces either side of the map label, with its northern edge
+- the centre line of College Cres, with its western kerb
+
+Nothing is drawn on the car park, the roofs or the pavements, which was the problem with colour-traced edges. What it misses:
+
+- **The eastern arm of the B83.** Its dashes are now detected as paint, but they are short and widely spaced at this zoom and do not chain.
+- **Many edges.** Where the road's tarmac merges with a car park or footpath, stepping outwards finds no clear end, so no edge is drawn.
+- **The junction itself**, which has no lane lines and waits for step 7.
+
+The lines also wobble slightly, because each one follows its dashes closely. In short, what it draws is mostly right, but it draws too little. The next gains are in chaining fainter, sparser dashes and in step 7.
 
 ### Known weaknesses
 

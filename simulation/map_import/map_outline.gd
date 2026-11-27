@@ -9,7 +9,7 @@ extends RefCounted
 var size: Vector2i
 ## Open polylines running along the edges of the roads.
 var road_edges: Array[PackedVector2Array]
-## Two-point lines along the painted markings that separate lanes.
+## Polylines along the painted markings that separate lanes.
 var lane_lines: Array[PackedVector2Array]
 
 

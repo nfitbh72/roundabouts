@@ -27,7 +27,8 @@
 | `display/` | Scenes and scripts that draw the game and handle input. |
 | `assets/` | Art, audio and fonts. |
 | `tests/` | Automated tests, mirroring the folders they test. |
-| `addons/` | Third-party Godot plugins, such as GUT and GodotSteam. |
+| `addons/` | Third-party Godot plugins, such as GUT and GodotSteam. Never edit these by hand. |
+| `tools/` | Development scripts, such as the pre-commit check. |
 | `docs/` | Decision records and design notes. |
 
 Only files that tools require at the root live there: `project.godot`, `README.md`, `CLAUDE.md` and git config files.
@@ -59,12 +60,13 @@ Only files that tools require at the root live there: `project.godot`, `README.m
 | --- | --- |
 | Open the editor | `godot --editor --path .` |
 | Run the game | `godot --path .` |
-| Check the project loads | `godot --headless --import && godot --headless --quit-after 60` |
-| Run the tests | `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` |
-| Format | `gdformat simulation display tests` |
-| Lint | `gdlint simulation display tests` |
+| Run every pre-commit check | `tools/check.sh` |
+| Reformat, then run every check | `tools/check.sh --fix` |
+| Run the tests only | `godot --headless -s addons/gut/gut_cmdln.gd -gconfig=res://tests/gutconfig.json` |
 
-GUT and gdtoolkit (which provides `gdformat` and `gdlint`) are not installed yet.
+`tools/check.sh` checks formatting, lints, loads the project headlessly and runs the tests. It covers our own GDScript and skips `addons/`.
+
+Tooling: GUT 9.7.1 lives in `addons/gut/`. `gdformat` and `gdlint` come from gdtoolkit, installed with `pipx install "gdtoolkit==4.*"` into `~/.local/bin`.
 
 ## Decisions
 
@@ -75,8 +77,6 @@ GUT and gdtoolkit (which provides `gdformat` and `gdlint`) are not installed yet
 
 ## Before committing
 
-1. Format and lint.
-2. Run the tests.
-3. Check the project loads headlessly with no errors or warnings.
-4. Commit `.import` and `.uid` files alongside the files they belong to. Never commit `.godot/`.
-5. Commit to `main` and push.
+1. Run `tools/check.sh` and fix anything it reports.
+2. Commit `.import` and `.uid` files alongside the files they belong to. Never commit `.godot/`.
+3. Commit to `main` and push.

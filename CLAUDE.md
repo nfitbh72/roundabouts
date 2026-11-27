@@ -65,7 +65,7 @@ Only files that tools require at the root live there: `project.godot`, `README.m
 | Reformat, then run every check | `tools/check.sh --fix` |
 | Run the tests only | `godot --headless -s addons/gut/gut_cmdln.gd -gconfig=res://tests/gutconfig.json` |
 
-`tools/check.sh` checks formatting, lints, loads the project headlessly and runs the tests. It covers our own GDScript and skips `addons/`.
+`tools/check.sh` checks formatting, lints, loads the project headlessly and runs the tests. It covers our own GDScript and skips `addons/`. It fails on any engine error or warning, on failing tests, and on tests that pass but leave orphaned nodes behind or make no assertions.
 
 Tooling: GUT 9.7.1 lives in `addons/gut/`. `gdformat` and `gdlint` come from gdtoolkit, installed with `pipx install "gdtoolkit==4.*"` into `~/.local/bin`.
 

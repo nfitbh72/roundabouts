@@ -11,6 +11,7 @@
 - Tidy code is very important to me. This codebase is likely to evolve a lot, so it needs to be very maintainable.
 - Game logic and display must be kept separate at all times. Game logic should use pure functions wherever possible.
 - For now, commit directly to `main` and push. We will set up agentic workflows and a proper PR process later.
+- Always run `tools/check.sh` before pushing. It must finish with no errors and no warnings. Never push with a failing or noisy check, and never skip it because a change looks small.
 
 ## Project
 
@@ -82,6 +83,6 @@ Tooling: GUT 9.7.1 lives in `addons/gut/`. `gdformat` and `gdlint` come from gdt
 
 ## Before committing
 
-1. Run `tools/check.sh` and fix anything it reports.
+1. Run `tools/check.sh` and fix everything it reports until it passes with no errors and no warnings.
 2. Commit `.import` and `.uid` files alongside the files they belong to. Never commit `.godot/`.
 3. Commit to `main` and push.

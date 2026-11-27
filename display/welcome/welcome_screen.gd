@@ -1,6 +1,7 @@
 class_name WelcomeScreen
 extends Control
-## Shows the welcome text one line at a time, each line filling the screen.
+## Shows the welcome text one line at a time, each line filling the screen
+## and fading in and out.
 ##
 ## Any key press or click moves straight on to the next line.
 
@@ -8,6 +9,7 @@ signal finished
 
 const WELCOME_TEXT_PATH: String = "res://assets/welcome.txt"
 const SECONDS_PER_LINE: float = 5.0
+const FADE_SECONDS: float = 0.75
 
 var _lines: PackedStringArray = PackedStringArray()
 var _elapsed: float = 0.0
@@ -41,6 +43,7 @@ func _refresh() -> void:
 	if index != _shown_index:
 		_shown_index = index
 		_line_label.text = _lines[index]
+	_line_label.modulate.a = WelcomeSequence.opacity_at(_elapsed, SECONDS_PER_LINE, FADE_SECONDS)
 
 
 func _finish() -> void:

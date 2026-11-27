@@ -25,6 +25,19 @@ static func is_finished(elapsed: float, line_count: int, seconds_per_line: float
 	return line_index_at(elapsed, seconds_per_line) >= line_count
 
 
+## Returns how visible the current line is, from 0.0 (hidden) to 1.0 (fully shown).
+## Each line fades in over its first [param fade_seconds] and out over its last.
+static func opacity_at(elapsed: float, seconds_per_line: float, fade_seconds: float) -> float:
+	if elapsed < 0.0:
+		return 0.0
+	if fade_seconds <= 0.0:
+		return 1.0
+	var time_into_line: float = fposmod(elapsed, seconds_per_line)
+	var fading_in: float = time_into_line / fade_seconds
+	var fading_out: float = (seconds_per_line - time_into_line) / fade_seconds
+	return clampf(minf(fading_in, fading_out), 0.0, 1.0)
+
+
 ## Returns the elapsed time at which the line after the current one begins.
 static func start_of_next_line(elapsed: float, seconds_per_line: float) -> float:
 	return (line_index_at(elapsed, seconds_per_line) + 1) * seconds_per_line
